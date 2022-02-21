@@ -12,20 +12,39 @@ class Product {
     }
 }
 
+class ShoppingCard {
+    items = [];
+
+    addProduct(product) {
+        this.items.push(product);
+        this.totalOutput.innerHTML = `<h2>Total \$${1}</h2>`;
+    }
+
+    render() {
+        const cardEl = document.createElement('section');
+        cardEl.innerHTML = `
+            <h2>Total \$${0}</h2>
+            <button>Order now!</button>
+        `;
+        cardEl.className = 'cart';
+        this.totalOutput = cardEl.querySelector('h2');
+        return cardEl;
+    }
+}
+
 class ProductItem {
     constructor(product) {
         this.product = product;
     }
 
     addToCard() {
-        console.log("Adding to card");
-        console.log(this.product);
+        App.addProductToCard(this.product);
     }
 
     render() {
         const prodEl = document.createElement('li');
         prodEl.className = 'product-item';
-        prodEl.innerHTML =  `
+        prodEl.innerHTML = `
                 <div>
                     <img src="${this.product.imageUrl}" alt="${this.product.title}">
                     <div class="product-item__content">
@@ -58,7 +77,6 @@ class ProductList {
     constructor() {}
 
     render() {
-        const renderHook = document.getElementById('app');
         const prodList = document.createElement('ul');
         prodList.className = 'product-list';
         for (const prod of this.products) {
@@ -66,16 +84,42 @@ class ProductList {
             const prodEl = productItem.render();
             prodList.append(prodEl);
         }
-        renderHook.append(prodList);
+        return prodList;
     }
 }
+
+class Shop {
+
+    render() {
+        const renderHook = document.getElementById('app');
+        this.card = new ShoppingCard();
+        const cardEl = this.card.render();
+        const productList = new ProductList();
+        const prodListEl = productList.render();
+
+        renderHook.append(cardEl);
+        renderHook.append(prodListEl);
+    }
+}
+
+class App {
+    static card; // removing this field won't affect
+
+    static init() {
+        const shop = new Shop();
+        shop.render();
+        this.card = shop.card;
+    }
+
+    static addProductToCard(product) {
+        this.card.addProduct(product);
+    }
+}
+
+App.init();
 
 // const productList = {
 //     products : [],
 //     render() {}
 // };
-
 // productList.render();
-
-const productList = new ProductList();
-productList.render();
