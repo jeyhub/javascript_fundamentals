@@ -12,23 +12,64 @@ class Product {
     }
 }
 
-class ShoppingCard {
+class ElementAttribute {
+    constructor(attrName, attrValue) {
+        this.name = attrName;
+        this.value = attrValue;
+    }
+}
+
+class Component {
+    constructor(renderHookId) {
+        this.hookId = renderHookId;
+    }
+
+    createRootElement(tag, cssClasses, attributes) {
+        const rootElement = document.createElement(tag);
+        if (cssClasses) {
+            rootElement.className = cssClasses;
+        }
+        if (attributes && attributes.length > 0) {
+            for (const attr of attributes) {
+                rootElement.setAttribute(attr.name, attr.value);
+            }
+        }
+        document.getElementById(this.hookId).append(rootElement);
+
+        return rootElement;
+    }
+}
+
+class ShoppingCard extends Component {
     items = [];
 
+    constructor(renderHookId) {
+        super(renderHookId);
+    }
+
+    set cardItems(value) {
+        this.items = value;
+        this.totalOutput.innerHTML = `<h2>Total \$${this.totalAmount.toFixed(2)}</h2>`;
+    }
+
+    get totalAmount() {
+        const sum = this.items.reduce((prevValue, curItem) => prevValue + curItem.price, 0);
+        return sum;
+    }
+
     addProduct(product) {
-        this.items.push(product);
-        this.totalOutput.innerHTML = `<h2>Total \$${1}</h2>`;
+        const updatedItems = [...this.items];
+        updatedItems.push(product);
+        this.cardItems = updatedItems;
     }
 
     render() {
-        const cardEl = document.createElement('section');
+        const cardEl = this.createRootElement('section', 'cart');
         cardEl.innerHTML = `
             <h2>Total \$${0}</h2>
             <button>Order now!</button>
         `;
-        cardEl.className = 'cart';
         this.totalOutput = cardEl.querySelector('h2');
-        return cardEl;
     }
 }
 
@@ -92,12 +133,12 @@ class Shop {
 
     render() {
         const renderHook = document.getElementById('app');
-        this.card = new ShoppingCard();
-        const cardEl = this.card.render();
+
+        this.card = new ShoppingCard('app');
+        this.card.render();
         const productList = new ProductList();
         const prodListEl = productList.render();
 
-        renderHook.append(cardEl);
         renderHook.append(prodListEl);
     }
 }
