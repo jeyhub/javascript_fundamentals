@@ -20,9 +20,15 @@ class ElementAttribute {
 }
 
 class Component {
-    constructor(renderHookId) {
+    constructor(renderHookId, shouldRender = true) {
         this.hookId = renderHookId;
+        if (shouldRender) {
+            this.render();
+        }
+
     }
+
+    render() {}
 
     createRootElement(tag, cssClasses, attributes) {
         const rootElement = document.createElement(tag);
@@ -73,9 +79,11 @@ class ShoppingCard extends Component {
     }
 }
 
-class ProductItem {
-    constructor(product) {
+class ProductItem extends Component {
+    constructor(product, renderHookId) {
+        super(renderHookId, false);
         this.product = product;
+        this.render();
     }
 
     addToCard() {
@@ -83,8 +91,7 @@ class ProductItem {
     }
 
     render() {
-        const prodEl = document.createElement('li');
-        prodEl.className = 'product-item';
+        const prodEl = this.createRootElement('li', 'product-item');
         prodEl.innerHTML = `
                 <div>
                     <img src="${this.product.imageUrl}" alt="${this.product.title}">
@@ -98,48 +105,54 @@ class ProductItem {
             `;
         const addCardButton = prodEl.querySelector('button');
         addCardButton.addEventListener('click', this.addToCard.bind(this));
-        return prodEl;
     }
 
 }
 
-class ProductList {
-    products = [
-        new Product('A pillow',
-            'https://contents.mediadecathlon.com/p1749048/f0b275c3207e208e12771a5c385d3ff8/p1749048.jpg',
-            'A soft pillow',
-            19.99),
-        new Product('A carpet',
-            'https://thumbs.dreamstime.com/b/persian-carpet-texture-21684751.jpg',
-            'A beautiful carpet',
-            29.99)
-    ];
+class ProductList extends Component{
+    products = [];
 
-    constructor() {}
+    constructor(renderHookId) {
+        super(renderHookId);
+        this.fetchProducts();
+    }
 
-    render() {
-        const prodList = document.createElement('ul');
-        prodList.className = 'product-list';
+    fetchProducts() {
+        this.products = [
+            new Product('A pillow',
+                'https://contents.mediadecathlon.com/p1749048/f0b275c3207e208e12771a5c385d3ff8/p1749048.jpg',
+                'A soft pillow',
+                19.99),
+            new Product('A carpet',
+                'https://thumbs.dreamstime.com/b/persian-carpet-texture-21684751.jpg',
+                'A beautiful carpet',
+                29.99)
+        ];
+        this.renderProducts();
+    }
+
+    renderProducts() {
         for (const prod of this.products) {
-            const productItem = new ProductItem(prod);
-            const prodEl = productItem.render();
-            prodList.append(prodEl);
+            new ProductItem(prod, 'prod-list');
         }
-        return prodList;
+    }
+
+    render() {
+        this.createRootElement('ul', 'product-list', [new ElementAttribute('id', 'prod-list')])
+        if (this.products && this.products.length > 0) {
+            this.renderProducts();
+        }
     }
 }
 
-class Shop {
+class Shop extends Component {
+    constructor() {
+        super();
+    }
 
     render() {
-        const renderHook = document.getElementById('app');
-
         this.card = new ShoppingCard('app');
-        this.card.render();
-        const productList = new ProductList();
-        const prodListEl = productList.render();
-
-        renderHook.append(prodListEl);
+        new ProductList('app');
     }
 }
 
@@ -148,7 +161,6 @@ class App {
 
     static init() {
         const shop = new Shop();
-        shop.render();
         this.card = shop.card;
     }
 
