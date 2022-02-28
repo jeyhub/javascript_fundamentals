@@ -28,7 +28,8 @@ class Component {
 
     }
 
-    render() {}
+    render() {
+    }
 
     createRootElement(tag, cssClasses, attributes) {
         const rootElement = document.createElement(tag);
@@ -69,12 +70,19 @@ class ShoppingCard extends Component {
         this.cardItems = updatedItems;
     }
 
+    orderProducts() {
+        console.log("Ordering...");
+        console.log(this.items);
+    }
+
     render() {
         const cardEl = this.createRootElement('section', 'cart');
         cardEl.innerHTML = `
             <h2>Total \$${0}</h2>
             <button>Order now!</button>
         `;
+        const orderButton = cardEl.querySelector('button');
+        orderButton.addEventListener('click', () => this.orderProducts());
         this.totalOutput = cardEl.querySelector('h2');
     }
 }
@@ -109,16 +117,17 @@ class ProductItem extends Component {
 
 }
 
-class ProductList extends Component{
-    products = [];
+class ProductList extends Component {
+    #products = [];
 
     constructor(renderHookId) {
-        super(renderHookId);
+        super(renderHookId, false);
+        this.render();
         this.fetchProducts();
     }
 
     fetchProducts() {
-        this.products = [
+        this.#products = [
             new Product('A pillow',
                 'https://contents.mediadecathlon.com/p1749048/f0b275c3207e208e12771a5c385d3ff8/p1749048.jpg',
                 'A soft pillow',
@@ -132,14 +141,14 @@ class ProductList extends Component{
     }
 
     renderProducts() {
-        for (const prod of this.products) {
+        for (const prod of this.#products) {
             new ProductItem(prod, 'prod-list');
         }
     }
 
     render() {
         this.createRootElement('ul', 'product-list', [new ElementAttribute('id', 'prod-list')])
-        if (this.products && this.products.length > 0) {
+        if (this.#products && this.#products.length > 0) {
             this.renderProducts();
         }
     }
