@@ -175,6 +175,7 @@ class App {
 
     static addProductToCard(product) {
         this.card.addProduct(product);
+        //console.log('Adding some functionality');
     }
 }
 
